@@ -12,27 +12,43 @@ function displayMovieInfo() {
   
   $("#gifs-view").empty()
 
+  //Show the spinner
+  spinner = $("<div class='spinner-border' role='status'>");
+  loading = $("<span  class='sr-only'>");
+  loading.text("Loading...");
+  $("#gifs-view").append(spinner);
+
+
   // Creating an AJAX call for the specific GIF button being clicked
   $.ajax({
     url: queryURL,
     method: "GET"
   }).then(function(response) {
 
-    // Creating a div to hold the movie
-    var gifDiv = $("<div class='gif-div'>");
-
+     //console.log(response.data); 
+     $("#gifs-view").empty()
 
     response.data.forEach (function (gifObject, gifIndex) { 
 
-      gifImage = $("<img>"); 
+      var gifFigure = $("<figure class='figure'>"); 
+      var gifImage = $("<img>"); 
       //add data attribute indicating if image is static or animated
+      gifImage.addClass("figure-img img-fluid"); 
       gifImage.attr("src",          gifObject.images.fixed_height_still.url);
       gifImage.attr("data-static",  gifObject.images.fixed_height_still.url);
       gifImage.attr("data-animate", gifObject.images.fixed_height.url);
       gifImage.attr("data-index",   gifIndex);
       gifImage.attr("data-animated", "false");  
-      gifDiv.append(gifImage);
-      $("#gifs-view").append(gifDiv);
+      var caption = $("<figcaption class='figure-caption'>");
+      caption.text("Rated: " + gifObject.rating.toUpperCase()); 
+      gifFigure.append(gifImage) ;
+      gifFigure.append(caption);
+      
+      $("#gifs-view").append(gifFigure);
+      
+
+
+      
     });
   });
 }
