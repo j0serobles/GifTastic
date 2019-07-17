@@ -1,32 +1,30 @@
 // Initial array of GIFs
 var gifs = ["Computers", "Baseball", "Mathematics", "Automobiles"];
+var offsets = [0,0,0,0]; //Stores offsets of next set of gifs to return from API.
+var searchString = ""; 
 
 
 // displayMovieInfo function re-renders the HTML to display the appropriate content
-function displayMovieInfo() {
+function displayGIFs() {
 
-  var searchString = $(this).attr("data-name");
-  // var queryURL  = "https://www.omdbapi.com/?t=" + movie + "&apikey=trilogy";
-  var queryURL     =  "https://api.giphy.com/v1/gifs/search?api_key=Oro0OZBXIqGCkXF4o6kQwSkMwlOjwRAe&q=" 
-  + searchString + "&limit=10&offset=0&rating=G&lang=en";
+  searchString = $(this).attr("data-name");
+  var queryURL     =  "https://api.giphy.com/v1/gifs/search?api_key=Oro0OZBXIqGCkXF4o6kQwSkMwlOjwRAe&q="  + 
+                        searchString + "&limit=10&offset=" 
+                        + offsets[gifs.indexOf(searchString)] + "&rating=G&lang=en";
   
-  $("#gifs-view").empty()
-
-  //Show the spinner
-  spinner = $("<div class='spinner-border' role='status'>");
-  loading = $("<span  class='sr-only'>");
-  loading.text("Loading...");
-  $("#gifs-view").append(spinner);
+  
+    //Show the spinner
+    $(".spinner-border").addClass("visible");
 
 
-  // Creating an AJAX call for the specific GIF button being clicked
+  // Creating an AJAX call for the specific category button being clicked
   $.ajax({
     url: queryURL,
     method: "GET"
   }).then(function(response) {
 
-     //console.log(response.data); 
-     $("#gifs-view").empty()
+     console.log(response.data); 
+     //$("#gifs-view").empty()
 
     response.data.forEach (function (gifObject, gifIndex) { 
 
@@ -40,16 +38,19 @@ function displayMovieInfo() {
       gifImage.attr("data-index",   gifIndex);
       gifImage.attr("data-animated", "false");  
       var caption = $("<figcaption class='figure-caption'>");
-      caption.text("Rated: " + gifObject.rating.toUpperCase()); 
+      caption.text("Rated: " + "'" + gifObject.rating.toUpperCase() +  "'     " + gifObject.title); 
       gifFigure.append(gifImage) ;
       gifFigure.append(caption);
       
-      $("#gifs-view").append(gifFigure);
       
-
-
-      
+    //Hide The Spinner
+    $(".spinner-border").addClass("invisible");
+    
+    $("#gifs-view").prepend(gifFigure);
     });
+
+    offsets[gifs.indexOf(searchString)] += 10; //Increase offset by 10 to return next 10 GIFs
+  
   });
 }
 
@@ -72,17 +73,22 @@ function swapGifs()  {
 // Function for displaying movie data
 function renderButtons() {
 
-  // Deleting the gifs prior to adding new gif
+  
+  //Hide The Spinner
+  $(".spinner-border").addClass("invisible");
+
+  // Deleting the buttons prior to adding new buttons.
   // (this is necessary otherwise you will have repeat buttons)
+
   $("#buttons-view").empty();
 
-  // Looping through the array of gifs
+  // Looping through the array of buttons.
   for (var i = 0; i < gifs.length; i++) {
 
-    // Then dynamicaly generating buttons for each movie in the array
+    // Dynamicaly generating buttons for each category in the array
     // This code $("<button>") is all jQuery needs to create the beginning and end tag. (<button></button>)
     var a = $("<button>");
-    // Adding a class of movie-btn to our button
+    // Adding a bootstrap btn class to our button
     a.addClass("btn btn-secondary m-3 gif-btn");
     // Adding a data-attribute
     a.attr("data-name", gifs[i]);
@@ -96,22 +102,24 @@ function renderButtons() {
 
 
  
-// This function handles events where a movie button is clicked
+// This function handles events where a category button is clicked
 $("#add-category").on("click", function(event) {
   event.preventDefault();
   // This line grabs the input from the textbox
   var category = $("#category-input").val().trim();
 
-  // Adding movie from the textbox to our array
+  // Adding category from the textbox to our array
   gifs.push(category);
+  offsets.push(0); // Set offset to 0 to start retrieving from index 0 from the API.
 
-  // Calling renderButtons which handles the processing of our movie array
+  // Calling renderButtons which handles the processing of our category array
   renderButtons();
 });
 
-// Adding a click event listener to all elements with a class of "movie-btn"
-$(document).on("click", ".gif-btn", displayMovieInfo);
+// Adding a click event listener to all elements with a class of "gif-btn"
+$(document).on("click", ".gif-btn", displayGIFs);
 
+//Adding a click event listener to all GIFs to toggle between statis-animated gifs.
 $(document).on("click", "img", swapGifs); 
 
 // Calling the renderButtons function to display the intial buttons

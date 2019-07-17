@@ -10,3 +10,8 @@ img  {
   border: 1px solid black !important;
 }
 
+.spinner-border { 
+  display: none; 
+
+}
+
